@@ -32,6 +32,7 @@ static void map_my_allocator() {
     for (int i = 0; i < 10; ++i) {
         map[i] = factorial(i);
     }
+
     print_result(map);
 }
 
@@ -60,9 +61,27 @@ static void mylist_my_allocator()
         list.push_back(data_type(i,factorial(i)));
     }
     print_result(list);
+
+    // Check const_iterator & iterator concepts
+    //
+    //for(auto it = list.begin(); it != list.end(); ++it) {
+    //    *it = data_type(5,5); // good change value
+    //}
+
+    //for(auto it = list.cbegin(); it != list.cend(); ++it) {
+    //    *it = data_type(5,5); // compile error const != non_const
+    //}
 }
 
 int main(int argc, char *argv[]) {
+    // Check allocate block of memory
+    //
+    //Allocator<int> allocator;
+    //for (size_t i = 1; i < 3; ++i) {
+    //    int* ints = allocator.allocate(i);
+    //    std::fill(ints, ints + i, 0);
+    //}
+    
     try {
         map_my_allocator();
         map_standard_allocator();

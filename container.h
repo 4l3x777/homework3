@@ -14,15 +14,28 @@ public:
         Node* _next_node;    
     };
 
-    MyList(const A& allocator = A()) : _allocator_node(const_cast<A&>(allocator)) {};
+    MyList(A allocator = A()) : _allocator_node(allocator) {};
     ~MyList();
     void push_back(const T& data);
+
+    class ConstIterator {
+    public:
+        ConstIterator(const MyList* list, const Node* node) : _container(const_cast<MyList*>(list)), _current_node(const_cast<Node*>(node)) {};
+        void operator++();
+        const T& operator*();
+        const ConstIterator& operator=(const ConstIterator& other) const;
+        bool operator!=(const ConstIterator& other) const;
+    private:
+        MyList* _container;
+        MyList::Node* _current_node;
+    };
+    friend class ConstIterator;
 
     class Iterator {
     public:
         Iterator(const MyList* list, const Node* node) : _container(const_cast<MyList*>(list)), _current_node(const_cast<Node*>(node)) {};
         void operator++();
-        const T& operator*();
+        T& operator*();
         const Iterator& operator=(const Iterator& other) const;
         bool operator!=(const Iterator& other) const;
     private:
@@ -33,8 +46,8 @@ public:
 
     Iterator begin() const;
     Iterator end() const;
-    const Iterator cbegin() const;
-    const Iterator cend() const;
+    const ConstIterator cbegin() const;
+    const ConstIterator cend() const;
 private:
     void delete_node(Node* node);
 
@@ -94,13 +107,39 @@ typename MyList<T, A>::Iterator MyList<T, A>::end() const {
 }
 
 template <typename T, class A>
-const typename MyList<T, A>::Iterator MyList<T, A>::cbegin() const {
-    return const_cast<const typename MyList<T, A>::Iterator&>(Iterator(this, this->_head));
+const typename MyList<T, A>::ConstIterator MyList<T, A>::cbegin() const
+{
+    return const_cast<const typename MyList<T, A>::ConstIterator&>(ConstIterator(this, this->_head));
 }
 
 template <typename T, class A>
-const typename MyList<T, A>::Iterator MyList<T, A>::cend() const {
-    return const_cast<const typename MyList<T, A>::Node*>(Iterator(this, this->_end));
+const typename MyList<T, A>::ConstIterator MyList<T, A>::cend() const {
+    return const_cast<const typename MyList<T, A>::ConstIterator&>(ConstIterator(this, this->_end));
+}
+
+//Mylist::ConstIterator
+
+template <typename T, class A>
+bool MyList<T, A>::ConstIterator::operator!=(const ConstIterator& other) const {
+    if (_current_node != other._current_node) return true;
+    return false;
+}
+
+template <typename T, class A>
+const typename MyList<T, A>::ConstIterator& MyList<T, A>::ConstIterator::operator=(const ConstIterator& other) const {
+    _container = other._container;
+    _current_node = other._current_node;
+    return *this;
+}
+
+template <typename T, class A>
+void MyList<T, A>::ConstIterator::operator++(){
+    if (_current_node != nullptr) _current_node = _current_node->_next_node;
+}
+
+template <typename T, class A>
+const T& MyList<T, A>::ConstIterator::operator*() {
+    return reinterpret_cast<const T&>(_current_node->_data);
 }
 
 //Mylist::Iterator
@@ -124,6 +163,6 @@ void MyList<T, A>::Iterator::operator++(){
 }
 
 template <typename T, class A>
-const T& MyList<T, A>::Iterator::operator*() {
-    return reinterpret_cast<const T&>(_current_node->_data);
+T& MyList<T, A>::Iterator::operator*() {
+    return _current_node->_data;
 }

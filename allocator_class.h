@@ -2,27 +2,27 @@
 #include <iostream>
 #include <memory>
 #include <map>
+#include <list>
 #include <vector>
 #include <stack>
 
-#define DEFAULT_ALLOCATION_CAPASITY 10
+static constexpr size_t DEFAULT_ALLOCATION_CAPASITY = 10;
 
 using namespace std;
 
 class Pool {
-public: 
-    using chunk = vector<uint8_t>;
-    using chunk_pointer = uint8_t*;
-private:
-    vector<chunk> memory_chunks_pool;
-    size_t available_memory {0};
-    stack<chunk_pointer> free_chunks_pointers;
 public:
-
+    using chunk = vector<uint8_t>;
+private:
+    list<shared_ptr<chunk>> memory_chunks_pool;
+    size_t available_memory {0};
+    stack<shared_ptr<chunk>> memory_chunks_free_pool;
+public:
+    size_t _type_size{0};
     size_t _allocation_capasity {0};
     size_t _allocation_capasity_grade {3};
     
-    Pool(size_t allocation_capasity = DEFAULT_ALLOCATION_CAPASITY);
+    Pool(size_t type_size, size_t allocation_capasity = DEFAULT_ALLOCATION_CAPASITY);
     Pool(const Pool& other);
     ~Pool();
     void* allocate(size_t n);
@@ -43,7 +43,7 @@ struct Allocator {
 #endif
 
     Allocator(size_t allocation_capasity = DEFAULT_ALLOCATION_CAPASITY) {
-       _Pool = make_shared<Pool>(allocation_capasity);
+       _Pool = make_shared<Pool>(sizeof(T), allocation_capasity);
     }
 
     ~Allocator() {
